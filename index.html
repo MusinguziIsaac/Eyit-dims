@@ -1,0 +1,2994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EYIT - Digital Information Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style id="app-style">
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f5f7fb;
+      min-height: 100vh;
+    }
+
+    .dark-mode {
+      background-color: #1a1a2e;
+      color: #f5f5f5;
+    }
+
+    .dark-mode .bg-white {
+      background-color: #16213e !important;
+    }
+
+    .dark-mode .bg-gray-50 {
+      background-color: #1a1a2e !important;
+    }
+
+    .dark-mode .bg-gray-100 {
+      background-color: #0f3460 !important;
+    }
+
+    .dark-mode .text-gray-700 {
+      color: #e2e8f0 !important;
+    }
+
+    .dark-mode .text-gray-600 {
+      color: #cbd5e0 !important;
+    }
+
+    .dark-mode .text-gray-500 {
+      color: #a0aec0 !important;
+    }
+
+    .dark-mode .border-gray-200 {
+      border-color: #2d3748 !important;
+    }
+
+    .dark-mode .shadow {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .transition-all {
+      transition: all 0.3s ease;
+    }
+
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .file-drop-area {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 100%;
+      padding: 25px;
+      border: 2px dashed #d1d5db;
+      border-radius: 3px;
+      transition: 0.2s;
+    }
+
+    .file-drop-area.is-active {
+      background-color: rgba(38, 132, 255, 0.05);
+    }
+
+    .fake-btn {
+      flex-shrink: 0;
+      background-color: rgba(38, 132, 255, 0.1);
+      border: 1px solid rgba(38, 132, 255, 0.1);
+      border-radius: 3px;
+      padding: 8px 15px;
+      margin-right: 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .file-msg {
+      font-size: small;
+      font-weight: 300;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-input {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      cursor: pointer;
+      opacity: 0;
+    }
+
+    .file-input:focus {
+      outline: none;
+    }
+
+    .loader {
+      border-top-color: #3498db;
+      -webkit-animation: spinner 1.5s linear infinite;
+      animation: spinner 1.5s linear infinite;
+    }
+
+    @-webkit-keyframes spinner {
+      0% { -webkit-transform: rotate(0deg); }
+      100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @keyframes spinner {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="flex flex-col">
+  <!-- Header -->
+  <header class="bg-blue-700 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <img src="images/logo.png" alt="EYIT Logo" class="h-10">
+        <h1 class="text-xl font-bold">EYIT DIMS</h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="hidden md:flex items-center space-x-2" id="user-info-display">
+          <!-- User info will be displayed here -->
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-blue-600 focus:outline-none">
+            <i class="fas fa-moon"></i>
+          </button>
+          <div class="relative" id="user-menu-container">
+            <button id="user-menu-button" class="flex items-center focus:outline-none">
+              <span class="hidden md:inline-block mr-2" id="user-name">Guest</span>
+              <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+                <i class="fas fa-user"></i>
+              </div>
+            </button>
+            <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden">
+              <!-- Dropdown content will be populated based on user role -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation -->
+  <nav class="bg-blue-600 text-white shadow-md" id="main-nav">
+    <div class="container mx-auto px-4">
+      <div class="flex space-x-4 overflow-x-auto" id="nav-links">
+        <!-- Nav links will be populated based on user role -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-6">
+    <div id="content-area" class="min-h-screen">
+      <!-- Content will be loaded here -->
+      <div class="flex flex-col items-center justify-center h-96">
+        <div class="text-center">
+          <i class="fas fa-spinner fa-spin text-blue-500 text-5xl mb-4"></i>
+          <h2 class="text-2xl font-semibold text-gray-700">Loading DIMS...</h2>
+          <p class="text-gray-500 mt-2">Please wait while we set up your experience.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-6">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between">
+        <div class="mb-4 md:mb-0">
+          <h3 class="text-lg font-semibold mb-2">EYIT Company DIMS</h3>
+          <p class="text-gray-400">Digital Information Management System</p>
+        </div>
+        <div class="flex space-x-4">
+          <a href="javascript:void(0)" class="hover:text-blue-400 transition-colors duration-300">About</a>
+          <a href="javascript:void(0)" class="hover:text-blue-400 transition-colors duration-300">Contact</a>
+          <a href="javascript:void(0)" class="hover:text-blue-400 transition-colors duration-300">Privacy Policy</a>
+        </div>
+      </div>
+      <div class="mt-6 border-t border-gray-700 pt-6 text-sm text-gray-400">
+        <p>&copy; 2025 EYIT Company. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none close-modal">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Login to DIMS</h2>
+        <p class="text-gray-600">Access your digital workspace</p>
+      </div>
+      <form id="login-form" class="space-y-4">
+        <input type="hidden" id="login-csrf" name="csrf_token" value="">
+        <div>
+          <label for="login-email" class="block text-gray-700 mb-1">Email or Username</label>
+          <input type="text" id="login-email" name="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+        </div>
+        <div>
+          <label for="login-password" class="block text-gray-700 mb-1">Password</label>
+          <input type="password" id="login-password" name="password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-blue-600 rounded">
+            <label for="remember" class="ml-2 text-sm text-gray-600">Remember me</label>
+          </div>
+          <a href="javascript:void(0)" id="forgot-password-link" class="text-sm text-blue-600 hover:underline">Forgot password?</a>
+        </div>
+        <div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+            Login
+          </button>
+        </div>
+        <div class="text-center text-sm text-gray-500">
+          Don't have an account? 
+          <a href="javascript:void(0)" id="show-register-modal" class="text-blue-600 hover:underline">Register now</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Registration Modal -->
+  <div id="register-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none close-modal">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Create an Account</h2>
+        <p class="text-gray-600">Join EYIT Digital Information Management System</p>
+      </div>
+      <form id="register-form" class="space-y-4">
+        <input type="hidden" id="register-csrf" name="csrf_token" value="">
+        <div>
+          <label for="register-fullname" class="block text-gray-700 mb-1">Full Name</label>
+          <input type="text" id="register-fullname" name="fullname" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+        </div>
+        <div>
+          <label for="register-username" class="block text-gray-700 mb-1">Username</label>
+          <input type="text" id="register-username" name="username" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+        </div>
+        <div>
+          <label for="register-email" class="block text-gray-700 mb-1">Email Address</label>
+          <input type="email" id="register-email" name="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+        </div>
+        <div>
+          <label for="register-password" class="block text-gray-700 mb-1">Password</label>
+          <input type="password" id="register-password" name="password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+          <div class="mt-1 text-xs text-gray-500">
+            Password must be at least 8 characters with uppercase, lowercase, number, and special character.
+          </div>
+        </div>
+        <div>
+          <label for="register-confirm-password" class="block text-gray-700 mb-1">Confirm Password</label>
+          <input type="password" id="register-confirm-password" name="confirm_password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="terms" name="terms" class="h-4 w-4 text-blue-600 rounded" required>
+          <label for="terms" class="ml-2 text-sm text-gray-600">I agree to the <a href="javascript:void(0)" class="text-blue-600 hover:underline">Terms of Service</a> and <a href="javascript:void(0)" class="text-blue-600 hover:underline">Privacy Policy</a></label>
+        </div>
+        <div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+            Register
+          </button>
+        </div>
+        <div class="text-center text-sm text-gray-500">
+          Already have an account? 
+          <a href="javascript:void(0)" id="show-login-modal" class="text-blue-600 hover:underline">Login now</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgot-password-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none close-modal">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Reset Password</h2>
+        <p class="text-gray-600">Enter your email to receive a password reset link</p>
+      </div>
+      <form id="forgot-password-form" class="space-y-4">
+        <input type="hidden" id="forgot-password-csrf" name="csrf_token" value="">
+        <div>
+          <label for="forgot-email" class="block text-gray-700 mb-1">Email Address</label>
+          <input type="email" id="forgot-email" name="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+        </div>
+        <div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+            Send Reset Link
+          </button>
+        </div>
+        <div class="text-center text-sm text-gray-500">
+          Remember your password? 
+          <a href="javascript:void(0)" id="back-to-login" class="text-blue-600 hover:underline">Back to login</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Alert Modal -->
+  <div id="alert-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <div class="text-center">
+        <div id="alert-icon" class="mx-auto mb-4 text-5xl"></div>
+        <h3 id="alert-title" class="text-xl font-bold mb-2"></h3>
+        <p id="alert-message" class="text-gray-600 mb-4"></p>
+        <button id="alert-close" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="text-center text-white">
+      <div class="inline-block h-16 w-16 border-4 border-gray-200 rounded-full loader"></div>
+      <p class="mt-4 text-lg" id="loading-message">Processing...</p>
+    </div>
+  </div>
+
+  <script id="app-script">
+    // App State Management
+    const state = {
+      currentUser: null,
+      isDarkMode: false,
+      currentView: 'home',
+      isAuthenticated: false
+    };
+
+    // Templates for different views
+    const templates = {
+      home: `
+        <div class="max-w-4xl mx-auto text-center">
+          <h1 class="text-4xl font-bold text-blue-700 mb-6">Welcome to EYIT Digital Information Management System</h1>
+          <p class="text-lg text-gray-600 mb-10">Revolutionize the way your company manages information with our cutting-edge digital solution.</p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="card bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all">
+              <div class="text-4xl text-blue-500 mb-4">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">Document Management</h3>
+              <p class="text-gray-600">Securely store, organize, and retrieve all your important documents.</p>
+            </div>
+            
+            <div class="card bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all">
+              <div class="text-4xl text-blue-500 mb-4">
+                <i class="fas fa-users"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">User Management</h3>
+              <p class="text-gray-600">Control access and permissions with robust user management.</p>
+            </div>
+            
+            <div class="card bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all">
+              <div class="text-4xl text-blue-500 mb-4">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-2">Analytics & Reports</h3>
+              <p class="text-gray-600">Gain insights with comprehensive reporting and analytics tools.</p>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 p-8 rounded-lg shadow mb-12">
+            <h2 class="text-2xl font-bold mb-4">Ready to Get Started?</h2>
+            <p class="text-gray-600 mb-6">Join the digital transformation journey. No more paper-based hassles.</p>
+            <div class="flex justify-center gap-4 flex-wrap">
+              <button id="home-login-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300">
+                Login
+              </button>
+              <button id="home-register-btn" class="bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-6 rounded-lg transition duration-300">
+                Register
+              </button>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+              <h3 class="text-xl font-semibold mb-3">Key Benefits</h3>
+              <ul class="text-left space-y-2">
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                  <span>Reduce operational costs by eliminating paper usage</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                  <span>Improve document security with role-based access control</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                  <span>Save time with quick search and retrieval capabilities</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                  <span>Access your documents from anywhere, anytime</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow">
+              <h3 class="text-xl font-semibold mb-3">System Features</h3>
+              <ul class="text-left space-y-2">
+                <li class="flex items-start">
+                  <i class="fas fa-shield-alt text-blue-500 mt-1 mr-2"></i>
+                  <span>Secure login and authentication</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-upload text-blue-500 mt-1 mr-2"></i>
+                  <span>Document upload and management</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-user-shield text-blue-500 mt-1 mr-2"></i>
+                  <span>Role-based user management</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-history text-blue-500 mt-1 mr-2"></i>
+                  <span>Activity logging and auditing</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `,
+
+      // Admin Dashboard Template
+      adminDashboard: `
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold text-gray-800">Administrator Dashboard</h1>
+          <p class="text-gray-600">Welcome back, <span id="admin-name">Admin</span>. Here's an overview of your system.</p>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div class="card bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Total Users</p>
+                <h3 class="text-2xl font-bold text-gray-800" id="total-users-count">0</h3>
+              </div>
+              <div class="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-500">
+                <i class="fas fa-users text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-xs text-green-500 font-medium flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i> 12% increase
+              </span>
+              <span class="text-xs text-gray-500">since last month</span>
+            </div>
+          </div>
+          
+          <div class="card bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Total Documents</p>
+                <h3 class="text-2xl font-bold text-gray-800" id="total-docs-count">0</h3>
+              </div>
+              <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center text-green-500">
+                <i class="fas fa-file-alt text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-xs text-green-500 font-medium flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i> 8% increase
+              </span>
+              <span class="text-xs text-gray-500">since last month</span>
+            </div>
+          </div>
+          
+          <div class="card bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Recent Activities</p>
+                <h3 class="text-2xl font-bold text-gray-800" id="recent-activities-count">0</h3>
+              </div>
+              <div class="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-500">
+                <i class="fas fa-chart-line text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-xs text-yellow-500 font-medium flex items-center">
+                <i class="fas fa-arrow-up mr-1"></i> 5% increase
+              </span>
+              <span class="text-xs text-gray-500">since yesterday</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h2 class="text-lg font-semibold text-gray-700 mb-4">System Activity Overview</h2>
+          <div class="h-64">
+            <canvas id="activityChart"></canvas>
+          </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="mb-6">
+          <div class="border-b border-gray-200">
+            <ul class="flex flex-wrap -mb-px">
+              <li class="mr-2">
+                <button id="tab-users" class="inline-block py-3 px-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg font-medium tab-button active-tab">
+                  User Management
+                </button>
+              </li>
+              <li class="mr-2">
+                <button id="tab-logs" class="inline-block py-3 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent rounded-t-lg font-medium tab-button">
+                  Activity Logs
+                </button>
+              </li>
+              <li class="mr-2">
+                <button id="tab-backup" class="inline-block py-3 px-4 text-gray-500 hover:text-gray-700 border-b-2 border-transparent rounded-t-lg font-medium tab-button">
+                  System Backup
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Tab Content -->
+        <div id="tab-content" class="bg-white rounded-lg shadow-md p-6">
+          <!-- User Management Tab (Default visible) -->
+          <div id="content-users" class="tab-content">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-700">Manage Users</h3>
+              <button id="add-user-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm flex items-center">
+                <i class="fas fa-plus mr-2"></i> Add User
+              </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="users-table-body">
+                  <tr>
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">Loading user data...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Activity Logs Tab (Hidden by default) -->
+          <div id="content-logs" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-700">Activity Logs</h3>
+              <div class="flex space-x-2">
+                <select id="log-filter" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                  <option value="all">All Activities</option>
+                  <option value="login">Login Activities</option>
+                  <option value="document">Document Activities</option>
+                  <option value="user">User Management</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="logs-table-body">
+                  <tr>
+                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">Loading activity logs...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- System Backup Tab (Hidden by default) -->
+          <div id="content-backup" class="tab-content hidden">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">System Backup</h3>
+            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+              <div class="flex items-start">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-blue-700">
+                    Backing up your system data ensures you never lose important information. Regular backups are recommended.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div class="bg-white border border-gray-200 p-4 rounded-lg">
+                <h4 class="font-medium text-gray-700 mb-2">Last Backup</h4>
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-calendar text-gray-500"></i>
+                  <span id="last-backup-date">Never</span>
+                </div>
+              </div>
+              
+              <div class="bg-white border border-gray-200 p-4 rounded-lg">
+                <h4 class="font-medium text-gray-700 mb-2">Backup Size</h4>
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-database text-gray-500"></i>
+                  <span id="backup-size">0 KB</span>
+                </div>
+              </div>
+            </div>
+            
+            <button id="create-backup-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center justify-center w-full md:w-auto">
+              <i class="fas fa-download mr-2"></i> Create & Download Backup
+            </button>
+          </div>
+        </div>
+      `,
+
+      // User Dashboard Template
+      userDashboard: `
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold text-gray-800">User Dashboard</h1>
+          <p class="text-gray-600">Welcome back, <span id="user-name">User</span>. Manage your documents and information.</p>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div class="card bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-sm font-medium text-gray-500">My Documents</p>
+                <h3 class="text-2xl font-bold text-gray-800" id="my-docs-count">0</h3>
+              </div>
+              <div class="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-500">
+                <i class="fas fa-file-alt text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-xs text-blue-500">View all documents</span>
+            </div>
+          </div>
+          
+          <div class="card bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Storage Used</p>
+                <h3 class="text-2xl font-bold text-gray-800" id="storage-used">0 MB</h3>
+              </div>
+              <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center text-green-500">
+                <i class="fas fa-database text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-green-600 h-2.5 rounded-full" id="storage-progress" style="width: 0%"></div>
+              </div>
+              <span class="text-xs text-gray-500 mt-1" id="storage-percentage">0% of 1 GB</span>
+            </div>
+          </div>
+          
+          <div class="card bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-sm font-medium text-gray-500">Recent Activities</p>
+                <h3 class="text-2xl font-bold text-gray-800" id="user-activity-count">0</h3>
+              </div>
+              <div class="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-500">
+                <i class="fas fa-history text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span class="text-xs text-purple-500">Last 7 days</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Upload Documents Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h2 class="text-lg font-semibold text-gray-700 mb-4">Upload New Document</h2>
+          <div class="file-drop-area mb-4">
+            <span class="fake-btn">Choose files</span>
+            <span class="file-msg">or drag and drop files here</span>
+            <input class="file-input" type="file" id="document-upload">
+          </div>
+          <div class="mb-4 hidden" id="file-details-form">
+            <label for="document-title" class="block text-gray-700 mb-1">Document Title</label>
+            <input type="text" id="document-title" name="title" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4">
+            <div class="flex items-center">
+              <button id="upload-document-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg mr-2">
+                Upload Document
+              </button>
+              <button id="cancel-upload-btn" class="text-gray-600 hover:text-gray-800">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- My Documents Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold text-gray-700">My Documents</h2>
+            <div class="relative">
+              <input type="text" placeholder="Search documents..." class="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <div class="absolute left-3 top-2.5 text-gray-400">
+                <i class="fas fa-search"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200" id="documents-table-body">
+                <tr>
+                  <td colspan="5" class="px-6 py-4 text-center text-gray-500">You have no documents yet.</td>
+                  </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Notifications Section -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-lg font-semibold text-gray-700 mb-4">System Notifications</h2>
+          <div id="notifications-list" class="space-y-4">
+            <div class="p-4 border-l-4 border-blue-500 bg-blue-50">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-info-circle text-blue-500"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-blue-700">Welcome to the Digital Information Management System! Get started by uploading your first document.</p>
+                  <p class="text-xs text-blue-500 mt-1">Just now</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+
+      // User Profile Template
+      userProfile: `
+        <div class="max-w-4xl mx-auto">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Profile Settings</h1>
+            <p class="text-gray-600">Update your account information and preferences</p>
+          </div>
+          
+          <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="md:flex">
+              <div class="md:w-1/3 bg-gray-50 p-8 border-r border-gray-200">
+                <div class="flex flex-col items-center">
+                  <div class="h-32 w-32 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-5xl mb-4">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <h2 class="text-xl font-semibold text-gray-800" id="profile-user-name">User Name</h2>
+                  <p class="text-gray-500 text-sm" id="profile-user-role">User</p>
+                </div>
+                
+                <div class="mt-8">
+                  <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Account Information</h3>
+                  <ul class="space-y-2">
+                    <li class="flex justify-between">
+                      <span class="text-sm text-gray-500">Member Since</span>
+                      <span class="text-sm text-gray-800" id="profile-join-date">Jan 1, 2025</span>
+                    </li>
+                    <li class="flex justify-between">
+                      <span class="text-sm text-gray-500">Last Login</span>
+                      <span class="text-sm text-gray-800" id="profile-last-login">Today</span>
+                    </li>
+                    <li class="flex justify-between">
+                      <span class="text-sm text-gray-500">Documents</span>
+                      <span class="text-sm text-gray-800" id="profile-doc-count">0</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="md:w-2/3 p-8">
+                <div class="mb-6 pb-6 border-b border-gray-200">
+                  <h3 class="text-lg font-semibold mb-4">Personal Information</h3>
+                  <form id="personal-info-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label for="profile-fullname" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="profile-fullname" name="fullname" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      </div>
+                      <div>
+                        <label for="profile-username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input type="text" id="profile-username" name="username" class="w-full px-4 py-2 border rounded-lg bg-gray-100" readonly>
+                      </div>
+                    </div>
+                    <div class="mb-4">
+                      <label for="profile-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                      <input type="email" id="profile-email" name="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+                        Update Information
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                
+                <div class="mb-6 pb-6 border-b border-gray-200">
+                  <h3 class="text-lg font-semibold mb-4">Change Password</h3>
+                  <form id="change-password-form">
+                    <div class="mb-4">
+                      <label for="current-password" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                      <input type="password" id="current-password" name="current_password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label for="new-password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                        <input type="password" id="new-password" name="new_password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      </div>
+                      <div>
+                        <label for="confirm-new-password" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                        <input type="password" id="confirm-new-password" name="confirm_new_password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      </div>
+                    </div>
+                    <div>
+                      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+                        Change Password
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                
+                <div>
+                  <h3 class="text-lg font-semibold mb-4">Account Settings</h3>
+                  <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-700">Email Notifications</h4>
+                        <p class="text-xs text-gray-500">Receive email notifications for system updates</p>
+                      </div>
+                      <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                        <input type="checkbox" id="email-notifications" name="email-notifications" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer">
+                        <label for="email-notifications" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-700">Two-Factor Authentication</h4>
+                        <p class="text-xs text-gray-500">Add an extra layer of security to your account</p>
+                      </div>
+                      <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                        <input type="checkbox" id="two-factor" name="two-factor" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer">
+                        <label for="two-factor" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                      </div>
+                    </div>
+                    <div class="pt-4 border-t border-gray-200">
+                      <button type="button" class="text-red-600 hover:text-red-800 font-medium">
+                        Delete Account
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+
+      // About Page Template
+      about: `
+        <div class="max-w-4xl mx-auto">
+          <div class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-3">About EYIT DIMS</h1>
+            <p class="text-gray-600">Digital Information Management System: Simplifying document management for EYIT Company</p>
+          </div>
+          
+          <div class="bg-white p-8 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Our Mission</h2>
+            <p class="text-gray-600 mb-6">
+              At EYIT Company, we strive to transform the way organizations manage their documents and information. Our Digital Information Management System (DIMS) is designed to eliminate paperwork, streamline workflows, and provide secure access to critical business documents.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 text-2xl mb-3">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Secure</h3>
+                <p class="text-gray-500 text-sm">Advanced encryption and role-based access control to protect your data</p>
+              </div>
+              <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 text-2xl mb-3">
+                  <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Efficient</h3>
+                <p class="text-gray-500 text-sm">Streamlined workflows and quick search capabilities save time and resources</p>
+              </div>
+              <div class="text-center">
+                <div class="mx-auto h-16 w-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-500 text-2xl mb-3">
+                  <i class="fas fa-sync-alt"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Reliable</h3>
+                <p class="text-gray-500 text-sm">Regular backups and redundant systems ensure your data is always available</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-white p-8 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Key Features</h2>
+            <div class="space-y-4">
+              <div class="flex">
+                <div class="flex-shrink-0 h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-500">
+                  <i class="fas fa-check text-sm"></i>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-medium text-gray-800">Document Management</h3>
+                  <p class="text-gray-600">Upload, download, and organize all your important documents in one central location</p>
+                </div>
+              </div>
+              <div class="flex">
+                <div class="flex-shrink-0 h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-500">
+                  <i class="fas fa-check text-sm"></i>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-medium text-gray-800">User Management</h3>
+                  <p class="text-gray-600">Control who has access to which documents with granular permission settings</p>
+                </div>
+              </div>
+              <div class="flex">
+                <div class="flex-shrink-0 h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-500">
+                  <i class="fas fa-check text-sm"></i>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-medium text-gray-800">Activity Tracking</h3>
+                  <p class="text-gray-600">Monitor system usage with detailed logs and reporting tools</p>
+                </div>
+              </div>
+              <div class="flex">
+                <div class="flex-shrink-0 h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-500">
+                  <i class="fas fa-check text-sm"></i>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-medium text-gray-800">Data Security</h3>
+                  <p class="text-gray-600">Enterprise-grade security measures to keep your information safe</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Contact Us</h2>
+            <p class="text-gray-600 mb-6">
+              Have questions about our Digital Information Management System? Get in touch with our team for more information.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center mb-3">
+                  <div class="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 mr-3">
+                    <i class="fas fa-envelope"></i>
+                  </div>
+                  <h3 class="font-semibold">Email</h3>
+                </div>
+                <p class="text-gray-600 text-sm">support@eyit-dims.com</p>
+              </div>
+              <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center mb-3">
+                  <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center text-green-500 mr-3">
+                    <i class="fas fa-phone-alt"></i>
+                  </div>
+                  <h3 class="font-semibold">Phone</h3>
+                </div>
+                <p class="text-gray-600 text-sm">+1 (555) 123-4567</p>
+              </div>
+              <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-center mb-3">
+                  <div class="h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-500 mr-3">
+                    <i class="fas fa-map-marker-alt"></i>
+                  </div>
+                  <h3 class="font-semibold">Office</h3>
+                </div>
+                <p class="text-gray-600 text-sm">123 Tech Street, Silicon Valley, CA 94024</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+
+      // Contact Page Template
+      contact: `
+        <div class="max-w-4xl mx-auto">
+          <div class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-3">Contact Us</h1>
+            <p class="text-gray-600">We'd love to hear from you. Get in touch with our team.</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+              <div class="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 text-2xl mb-4">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <h3 class="text-lg font-semibold mb-2">Email Us</h3>
+              <p class="text-gray-500 text-sm mb-3">For general inquiries and support</p>
+              <a href="mailto:info@eyit-dims.com" class="text-blue-600 hover:underline">info@eyit-dims.com</a>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+              <div class="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 text-2xl mb-4">
+                <i class="fas fa-phone-alt"></i>
+              </div>
+              <h3 class="text-lg font-semibold mb-2">Call Us</h3>
+              <p class="text-gray-500 text-sm mb-3">Mon-Fri from 9 AM to 5 PM</p>
+              <a href="tel:+15551234567" class="text-green-600 hover:underline">+1 (555) 123-4567</a>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md text-center">
+              <div class="mx-auto h-16 w-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-500 text-2xl mb-4">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <h3 class="text-lg font-semibold mb-2">Visit Us</h3>
+              <p class="text-gray-500 text-sm mb-3">Our headquarters location</p>
+              <address class="not-italic text-purple-600">
+                123 Tech Street<br>
+                Silicon Valley, CA 94024
+              </address>
+            </div>
+          </div>
+          
+          <div class="bg-white p-8 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Send us a Message</h2>
+            <form id="contact-form" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="contact-name" class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                  <input type="text" id="contact-name" name="name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div>
+                  <label for="contact-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                  <input type="email" id="contact-email" name="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+              </div>
+              <div>
+                <label for="contact-subject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                <input type="text" id="contact-subject" name="subject" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+              </div>
+              <div>
+                <label for="contact-message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea id="contact-message" name="message" rows="5" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required></textarea>
+              </div>
+              <div>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300">
+                  Send Message
+                </button>
+              </div>
+            </form>
+          </div>
+          
+          <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Frequently Asked Questions</h2>
+            <div class="space-y-4">
+              <div>
+                <h3 class="text-lg font-medium text-gray-800">How secure is the EYIT DIMS?</h3>
+                <p class="text-gray-600">Our system employs enterprise-grade security measures including data encryption, secure authentication, and role-based access control to keep your information safe.</p>
+              </div>
+              <div>
+                <h3 class="text-lg font-medium text-gray-800">Can I access DIMS from mobile devices?</h3>
+                <p class="text-gray-600">Yes, our system is fully responsive and can be accessed from any device with an internet connection, including smartphones and tablets.</p>
+              </div>
+              <div>
+                <h3 class="text-lg font-medium text-gray-800">How do I get technical support?</h3>
+                <p class="text-gray-600">Technical support is available via email at support@eyit-dims.com or by calling our support line during business hours.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+    };
+
+    // Initialize the application
+    function initializeApp() {
+      // Check if a default admin exists, if not create one
+      createDefaultAdminIfNone();
+      
+      // Set up event listeners
+      setupEventListeners();
+      
+      // Load the appropriate view based on authentication state
+      loadInitialView();
+      
+      // Initialize UI components
+      initializeUI();
+    }
+
+    // Create default admin if none exists
+    function createDefaultAdminIfNone() {
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      
+      if (users.length === 0) {
+        // Create default admin
+        const defaultAdmin = {
+          id: 1,
+          fullName: 'System Administrator',
+          username: 'admin',
+          email: 'admin@eyit.com',
+          password: hashPassword('admin123'),  // In a real system, this would be securely hashed
+          role: 'admin',
+          createdAt: new Date().toISOString()
+        };
+        
+        users.push(defaultAdmin);
+        localStorage.setItem('eyit_dims_users', JSON.stringify(users));
+        
+        // Initialize other storage items
+        localStorage.setItem('eyit_dims_documents', JSON.stringify([]));
+        localStorage.setItem('eyit_dims_activity_logs', JSON.stringify([]));
+        localStorage.setItem('eyit_dims_system_reports', JSON.stringify([]));
+      }
+    }
+
+    // Simple password hashing simulation (this is just for the client-side prototype)
+    function hashPassword(password) {
+      // In a real app, this would use a secure hashing algorithm
+      return btoa(password); // Base64 encoding for demonstration
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+      // User menu dropdown toggle
+      document.getElementById('user-menu-button').addEventListener('click', function() {
+        document.getElementById('user-dropdown').classList.toggle('hidden');
+      });
+      
+      // Dark mode toggle
+      document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(event) {
+        const userMenu = document.getElementById('user-dropdown');
+        const userMenuButton = document.getElementById('user-menu-button');
+        
+        if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+          userMenu.classList.add('hidden');
+        }
+      });
+      
+      // Modal event listeners
+      setupModalEventListeners();
+      
+      // Form submission event listeners
+      setupFormEventListeners();
+    }
+
+    // Set up modal related event listeners
+    function setupModalEventListeners() {
+      // Login modal
+      document.getElementById('show-login-modal')?.addEventListener('click', function() {
+        document.getElementById('register-modal').classList.add('hidden');
+        document.getElementById('forgot-password-modal').classList.add('hidden');
+        document.getElementById('login-modal').classList.remove('hidden');
+      });
+      
+      // Register modal
+      document.getElementById('show-register-modal')?.addEventListener('click', function() {
+        document.getElementById('login-modal').classList.add('hidden');
+        document.getElementById('forgot-password-modal').classList.add('hidden');
+        document.getElementById('register-modal').classList.remove('hidden');
+      });
+      
+      // Forgot password modal
+      document.getElementById('forgot-password-link')?.addEventListener('click', function() {
+        document.getElementById('login-modal').classList.add('hidden');
+        document.getElementById('forgot-password-modal').classList.remove('hidden');
+      });
+      
+      // Back to login from forgot password
+      document.getElementById('back-to-login')?.addEventListener('click', function() {
+        document.getElementById('forgot-password-modal').classList.add('hidden');
+        document.getElementById('login-modal').classList.remove('hidden');
+      });
+      
+      // Close modals
+      document.querySelectorAll('.close-modal').forEach(button => {
+        button.addEventListener('click', function() {
+          document.querySelectorAll('.fixed.inset-0.bg-black.bg-opacity-50').forEach(modal => {
+            modal.classList.add('hidden');
+          });
+        });
+      });
+      
+      // Alert modal close button
+      document.getElementById('alert-close').addEventListener('click', function() {
+        document.getElementById('alert-modal').classList.add('hidden');
+      });
+    }
+
+    // Set up form submission event listeners
+    function setupFormEventListeners() {
+      // Login form submission
+      document.getElementById('login-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        // Try backend login first, if fails use local storage
+        handleLogin(email, password);
+      });
+    }
+
+    // Handle login - try backend first, then fallback to localStorage
+    async function handleLogin(email, password) {
+      showLoading('Logging in...');
+      
+      try {
+        // Try backend login first
+        const resp = await postJSON('/api/login', { 
+          identifier: email, 
+          password: password 
+        });
+        
+        if (resp.ok && resp.user) {
+          // Backend login successful
+          state.currentUser = resp.user;
+          state.isAuthenticated = true;
+          
+          // Save session in localStorage
+          localStorage.setItem('eyit_dims_current_user', JSON.stringify(resp.user));
+          
+          hideLoading();
+          showAlert('success', 'Login Successful', `Welcome back, ${resp.user.fullname || resp.user.username}!`);
+          
+          // Close login modal
+          document.getElementById('login-modal').classList.add('hidden');
+          
+          // Update UI for authenticated user
+          updateUIForAuthenticatedUser();
+          
+          // Load appropriate dashboard
+          if (resp.user.role === 'admin') {
+            loadAdminDashboard();
+          } else {
+            loadUserDashboard();
+          }
+        } else {
+          // Backend login failed, try local storage
+          tryLocalStorageLogin(email, password);
+        }
+      } catch (error) {
+        // Backend unavailable, try local storage
+        tryLocalStorageLogin(email, password);
+      }
+    }
+
+    // Try login using localStorage data
+    function tryLocalStorageLogin(email, password) {
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      const user = users.find(u => (u.email === email || u.username === email) && hashPassword(password) === u.password);
+      
+      hideLoading();
+      
+      if (user) {
+        // Login successful
+        state.currentUser = user;
+        state.isAuthenticated = true;
+        
+        // Save session in localStorage
+        localStorage.setItem('eyit_dims_current_user', JSON.stringify(user));
+        
+        // Log activity
+        logActivity(user.id, 'login', 'User logged in');
+        
+        // Close login modal
+        document.getElementById('login-modal').classList.add('hidden');
+        
+        // Update UI for authenticated user
+        updateUIForAuthenticatedUser();
+        
+        // Load appropriate dashboard
+        if (user.role === 'admin') {
+          loadAdminDashboard();
+        } else {
+          loadUserDashboard();
+        }
+      } else {
+        // Login failed
+        showAlert('error', 'Login Failed', 'Invalid email/username or password. Please try again.');
+      }
+    }
+
+    // Load initial view based on authentication state
+    function loadInitialView() {
+      // Check if user is logged in
+      const savedUser = localStorage.getItem('eyit_dims_current_user');
+      
+      if (savedUser) {
+        state.currentUser = JSON.parse(savedUser);
+        state.isAuthenticated = true;
+        
+        // Update UI for authenticated user
+        updateUIForAuthenticatedUser();
+        
+        // Load appropriate dashboard
+        if (state.currentUser.role === 'admin') {
+          loadAdminDashboard();
+        } else {
+          loadUserDashboard();
+        }
+      } else {
+        // User is not logged in, show home page
+        loadView('home');
+        
+        // Update navigation for unauthenticated user
+        updateNavigationForUnauthenticatedUser();
+      }
+    }
+
+    // Update UI components for authenticated users
+    function updateUIForAuthenticatedUser() {
+      // Update user info display
+      document.getElementById('user-info-display').innerHTML = `
+        <span class="text-sm">Welcome, ${state.currentUser.fullName || state.currentUser.fullname}</span>
+      `;
+      
+      // Update user name
+      document.getElementById('user-name').textContent = state.currentUser.username;
+      
+      // Update dropdown menu based on user role
+      if (state.currentUser.role === 'admin') {
+        document.getElementById('user-dropdown').innerHTML = `
+          <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="admin-dashboard-link">Dashboard</a>
+          <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="about-link">About</a>
+          <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="contact-link">Contact</a>
+          <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="logout-link">Logout</a>
+        `;
+      } else {
+        document.getElementById('user-dropdown').innerHTML = `
+          <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="user-dashboard-link">Dashboard</a>
+          <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="user-profile-link">Profile</a>
+          <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="about-link">About</a>
+          <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="contact-link">Contact</a>
+          <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="logout-link">Logout</a>
+        `;
+      }
+      
+      // Set up navigation links for authenticated user
+      updateNavigationForAuthenticatedUser();
+      
+      // Add event listeners for dropdown links
+      document.getElementById('admin-dashboard-link')?.addEventListener('click', function() {
+        loadAdminDashboard();
+        document.getElementById('user-dropdown').classList.add('hidden');
+      });
+      
+      document.getElementById('user-dashboard-link')?.addEventListener('click', function() {
+        loadUserDashboard();
+        document.getElementById('user-dropdown').classList.add('hidden');
+      });
+      
+      document.getElementById('user-profile-link')?.addEventListener('click', function() {
+        loadUserProfile();
+        document.getElementById('user-dropdown').classList.add('hidden');
+      });
+      
+      document.getElementById('about-link')?.addEventListener('click', function() {
+        loadView('about');
+        document.getElementById('user-dropdown').classList.add('hidden');
+      });
+      
+      document.getElementById('contact-link')?.addEventListener('click', function() {
+        loadView('contact');
+        document.getElementById('user-dropdown').classList.add('hidden');
+      });
+      
+      document.getElementById('logout-link')?.addEventListener('click', function() {
+        logout();
+        document.getElementById('user-dropdown').classList.add('hidden');
+      });
+    }
+
+    // Update navigation for authenticated users
+    function updateNavigationForAuthenticatedUser() {
+      const navLinks = document.getElementById('nav-links');
+      
+      if (state.currentUser.role === 'admin') {
+        navLinks.innerHTML = `
+          <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-admin-dashboard">Dashboard</a>
+          <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-about">About</a>
+          <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-contact">Contact</a>
+        `;
+      } else {
+        navLinks.innerHTML = `
+          <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-user-dashboard">Dashboard</a>
+          <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-profile">Profile</a>
+          <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-about">About</a>
+          <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-contact">Contact</a>
+        `;
+      }
+      
+      // Add event listeners for nav links
+      document.getElementById('nav-admin-dashboard')?.addEventListener('click', loadAdminDashboard);
+      document.getElementById('nav-user-dashboard')?.addEventListener('click', loadUserDashboard);
+      document.getElementById('nav-profile')?.addEventListener('click', loadUserProfile);
+      document.getElementById('nav-about')?.addEventListener('click', function() {
+        loadView('about');
+      });
+      document.getElementById('nav-contact')?.addEventListener('click', function() {
+        loadView('contact');
+      });
+    }
+
+    // Update navigation for unauthenticated users
+    function updateNavigationForUnauthenticatedUser() {
+      document.getElementById('nav-links').innerHTML = `
+        <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-home">Home</a>
+        <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-about">About</a>
+        <a href="javascript:void(0)" class="py-2 px-4 hover:bg-blue-700 transition-colors duration-300" id="nav-contact">Contact</a>
+      `;
+      
+      document.getElementById('user-dropdown').innerHTML = `
+        <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="login-btn">Login</a>
+        <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" id="register-btn">Register</a>
+      `;
+      
+      document.getElementById('user-name').textContent = 'Guest';
+      
+      // Add event listeners
+      document.getElementById('nav-home')?.addEventListener('click', function() {
+        loadView('home');
+      });
+      
+      document.getElementById('nav-about')?.addEventListener('click', function() {
+        loadView('about');
+      });
+      
+      document.getElementById('nav-contact')?.addEventListener('click', function() {
+        loadView('contact');
+      });
+      
+      document.getElementById('login-btn')?.addEventListener('click', function() {
+        document.getElementById('login-modal').classList.remove('hidden');
+        document.getElementById('user-dropdown').classList.add('hidden');
+      });
+      
+      document.getElementById('register-btn')?.addEventListener('click', function() {
+        document.getElementById('register-modal').classList.remove('hidden');
+        document.getElementById('user-dropdown').classList.add('hidden');
+      });
+    }
+
+    // Initialize UI components
+    function initializeUI() {
+      // Generate CSRF tokens for forms
+      document.getElementById('login-csrf').value = generateCSRFToken();
+      document.getElementById('register-csrf').value = generateCSRFToken();
+      document.getElementById('forgot-password-csrf').value = generateCSRFToken();
+      
+      // Initialize dark mode based on saved preference
+      const darkModeEnabled = localStorage.getItem('eyit_dims_dark_mode') === 'true';
+      if (darkModeEnabled) {
+        document.body.classList.add('dark-mode');
+        state.isDarkMode = true;
+        document.getElementById('dark-mode-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+      }
+    }
+
+    // Generate a CSRF token
+    function generateCSRFToken() {
+      // This is a simple implementation for the prototype
+      return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
+
+    // Toggle dark mode
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      state.isDarkMode = document.body.classList.contains('dark-mode');
+      
+      // Update icon
+      if (state.isDarkMode) {
+        document.getElementById('dark-mode-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+      } else {
+        document.getElementById('dark-mode-toggle').innerHTML = '<i class="fas fa-moon"></i>';
+      }
+      
+      // Save preference
+      localStorage.setItem('eyit_dims_dark_mode', state.isDarkMode);
+    }
+
+    // Log user activity
+    function logActivity(userId, action, details) {
+      const activityLogs = JSON.parse(localStorage.getItem('eyit_dims_activity_logs')) || [];
+      
+      const newLog = {
+        id: activityLogs.length + 1,
+        userId: userId,
+        action: action,
+        details: details,
+        timestamp: new Date().toISOString()
+      };
+      
+      activityLogs.push(newLog);
+      localStorage.setItem('eyit_dims_activity_logs', JSON.stringify(activityLogs));
+    }
+
+    // Load a view by template name
+    function loadView(templateName) {
+      const contentArea = document.getElementById('content-area');
+      contentArea.innerHTML = templates[templateName];
+      state.currentView = templateName;
+      
+      // Set up page-specific event listeners
+      if (templateName === 'home') {
+        document.getElementById('home-login-btn')?.addEventListener('click', function() {
+          document.getElementById('login-modal').classList.remove('hidden');
+        });
+        
+        document.getElementById('home-register-btn')?.addEventListener('click', function() {
+          document.getElementById('register-modal').classList.remove('hidden');
+        });
+      }
+    }
+
+    // Load admin dashboard view
+    function loadAdminDashboard() {
+      if (!state.isAuthenticated || state.currentUser.role !== 'admin') {
+        showAlert('error', 'Access Denied', 'You must be logged in as an administrator to view this page.');
+        return;
+      }
+      
+      loadView('adminDashboard');
+      
+      // Update admin name in dashboard
+      document.getElementById('admin-name').textContent = state.currentUser.fullName || state.currentUser.fullname;
+      
+      // Load dashboard data
+      loadAdminDashboardData();
+      
+      // Set up tab switching
+      setupAdminTabSwitching();
+      
+      // Set up add user button
+      document.getElementById('add-user-btn').addEventListener('click', showAddUserForm);
+      
+      // Set up backup button
+      document.getElementById('create-backup-btn').addEventListener('click', createBackup);
+      
+      // Initialize activity chart
+      initActivityChart();
+    }
+
+    // Load user dashboard view
+    function loadUserDashboard() {
+      if (!state.isAuthenticated) {
+        showAlert('error', 'Access Denied', 'You must be logged in to view this page.');
+        return;
+      }
+      
+      loadView('userDashboard');
+      
+      // Update user name in dashboard
+      document.getElementById('user-name').textContent = state.currentUser.fullName || state.currentUser.fullname;
+      
+      // Load dashboard data
+      loadUserDashboardData();
+      
+      // Set up file upload functionality
+      setupFileUpload();
+    }
+
+    // Load user profile view
+    function loadUserProfile() {
+      if (!state.isAuthenticated) {
+        showAlert('error', 'Access Denied', 'You must be logged in to view this page.');
+        return;
+      }
+      
+      loadView('userProfile');
+      
+      // Load user profile data
+      loadUserProfileData();
+      
+      // Set up profile form events
+      setupProfileFormEvents();
+    }
+
+    // Load admin dashboard data
+    function loadAdminDashboardData() {
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      const documents = JSON.parse(localStorage.getItem('eyit_dims_documents')) || [];
+      const activityLogs = JSON.parse(localStorage.getItem('eyit_dims_activity_logs')) || [];
+      
+      // Update summary counts
+      document.getElementById('total-users-count').textContent = users.length;
+      document.getElementById('total-docs-count').textContent = documents.length;
+      document.getElementById('recent-activities-count').textContent = activityLogs.length;
+      
+      // Load users table
+      loadUsersTable();
+      
+      // Load activity logs
+      loadActivityLogs();
+      
+      // Update backup stats
+      updateBackupStats();
+    }
+
+    // Load user dashboard data
+    function loadUserDashboardData() {
+      const userId = state.currentUser.id;
+      const documents = JSON.parse(localStorage.getItem('eyit_dims_documents')) || [];
+      const activityLogs = JSON.parse(localStorage.getItem('eyit_dims_activity_logs')) || [];
+      
+      // Filter user's documents
+      const userDocuments = documents.filter(doc => doc.userId === userId);
+      
+      // Calculate storage used (simulate file sizes)
+      const storageUsed = userDocuments.reduce((total, doc) => total + (doc.size || 0), 0);
+      const storageMB = (storageUsed / (1024 * 1024)).toFixed(2);
+      const storagePercentage = Math.min(Math.round((storageUsed / (1024 * 1024 * 1024)) * 100), 100);
+      
+      // Filter user's activities
+      const userActivities = activityLogs.filter(log => log.userId === userId);
+      const recentActivities = userActivities.slice(-7);
+      
+      // Update summary cards
+      document.getElementById('my-docs-count').textContent = userDocuments.length;
+      document.getElementById('storage-used').textContent = `${storageMB} MB`;
+      document.getElementById('storage-progress').style.width = `${storagePercentage}%`;
+      document.getElementById('storage-percentage').textContent = `${storagePercentage}% of 1 GB`;
+      document.getElementById('user-activity-count').textContent = recentActivities.length;
+      
+      // Load user's documents table
+      loadUserDocuments(userDocuments);
+    }
+
+    // Load user profile data
+    function loadUserProfileData() {
+      const user = state.currentUser;
+      
+      // Update profile fields
+      document.getElementById('profile-user-name').textContent = user.fullName || user.fullname;
+      document.getElementById('profile-user-role').textContent = user.role === 'admin' ? 'Administrator' : 'User';
+      document.getElementById('profile-join-date').textContent = formatDate(user.createdAt);
+      document.getElementById('profile-last-login').textContent = 'Today';
+      
+      const documents = JSON.parse(localStorage.getItem('eyit_dims_documents')) || [];
+      const userDocuments = documents.filter(doc => doc.userId === user.id);
+      document.getElementById('profile-doc-count').textContent = userDocuments.length;
+      
+      // Fill form fields
+      document.getElementById('profile-fullname').value = user.fullName || user.fullname;
+      document.getElementById('profile-username').value = user.username;
+      document.getElementById('profile-email').value = user.email;
+    }
+
+    // Load users table
+    function loadUsersTable() {
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      const tableBody = document.getElementById('users-table-body');
+      
+      if (users.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found</td></tr>`;
+        return;
+      }
+      
+      tableBody.innerHTML = '';
+      
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900">${user.fullName || user.fullname}</div>
+                <div class="text-sm text-gray-500">@${user.username}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${user.email}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}">${user.role === 'admin' ? 'Administrator' : 'User'}</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <a href="javascript:void(0)" class="text-blue-600 hover:text-blue-900 mr-3 edit-user" data-id="${user.id}">Edit</a>
+            <a href="javascript:void(0)" class="text-red-600 hover:text-red-900 delete-user" data-id="${user.id}">Delete</a>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+      
+      // Add event listeners to buttons
+      document.querySelectorAll('.edit-user').forEach(button => {
+        button.addEventListener('click', function() {
+          const userId = parseInt(this.getAttribute('data-id'));
+          editUser(userId);
+        });
+      });
+      
+      document.querySelectorAll('.delete-user').forEach(button => {
+        button.addEventListener('click', function() {
+          const userId = parseInt(this.getAttribute('data-id'));
+          deleteUser(userId);
+        });
+      });
+    }
+
+    // Load activity logs
+    function loadActivityLogs() {
+      const activityLogs = JSON.parse(localStorage.getItem('eyit_dims_activity_logs')) || [];
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      const tableBody = document.getElementById('logs-table-body');
+      
+      if (activityLogs.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">No activity logs found</td></tr>`;
+        return;
+      }
+      
+      // Sort logs by timestamp (most recent first)
+      const sortedLogs = [...activityLogs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      tableBody.innerHTML = '';
+      
+      sortedLogs.forEach(log => {
+        const user = users.find(u => u.id === log.userId) || { username: 'Unknown' };
+        
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${formatDateTime(log.timestamp)}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${user.username}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${log.action}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${log.details}
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+      
+      // Set up log filter
+      document.getElementById('log-filter').addEventListener('change', function() {
+        const filterValue = this.value;
+        filterActivityLogs(filterValue);
+      });
+    }
+
+    // Filter activity logs
+    function filterActivityLogs(filterType) {
+      const activityLogs = JSON.parse(localStorage.getItem('eyit_dims_activity_logs')) || [];
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      const tableBody = document.getElementById('logs-table-body');
+      
+      // Sort logs by timestamp (most recent first)
+      const sortedLogs = [...activityLogs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      let filteredLogs = sortedLogs;
+      
+      if (filterType !== 'all') {
+        filteredLogs = sortedLogs.filter(log => log.action.includes(filterType));
+      }
+      
+      tableBody.innerHTML = '';
+      
+      if (filteredLogs.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">No matching logs found</td></tr>`;
+        return;
+      }
+      
+      filteredLogs.forEach(log => {
+        const user = users.find(u => u.id === log.userId) || { username: 'Unknown' };
+        
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${formatDateTime(log.timestamp)}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${user.username}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${log.action}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${log.details}
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Update backup stats
+    function updateBackupStats() {
+      const lastBackup = localStorage.getItem('eyit_dims_last_backup');
+      const backupSize = calculateBackupSize();
+      
+      document.getElementById('last-backup-date').textContent = lastBackup ? formatDateTime(lastBackup) : 'Never';
+      document.getElementById('backup-size').textContent = formatSize(backupSize);
+    }
+
+    // Calculate backup size
+    function calculateBackupSize() {
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      const documents = JSON.parse(localStorage.getItem('eyit_dims_documents')) || [];
+      const activityLogs = JSON.parse(localStorage.getItem('eyit_dims_activity_logs')) || [];
+      const systemReports = JSON.parse(localStorage.getItem('eyit_dims_system_reports')) || [];
+      
+      const data = {
+        users: users,
+        documents: documents,
+        activityLogs: activityLogs,
+        systemReports: systemReports
+      };
+      
+      // Calculate approximate size based on JSON string length
+      const jsonString = JSON.stringify(data);
+      return jsonString.length;
+    }
+
+    // Create and download backup
+    function createBackup() {
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      const documents = JSON.parse(localStorage.getItem('eyit_dims_documents')) || [];
+      const activityLogs = JSON.parse(localStorage.getItem('eyit_dims_activity_logs')) || [];
+      const systemReports = JSON.parse(localStorage.getItem('eyit_dims_system_reports')) || [];
+      
+      const backupData = {
+        users: users,
+        documents: documents,
+        activityLogs: activityLogs,
+        systemReports: systemReports,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Save backup timestamp
+      localStorage.setItem('eyit_dims_last_backup', new Date().toISOString());
+      
+      // Create JSON file
+      const jsonString = JSON.stringify(backupData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create download link
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = `eyit_dims_backup_${formatDateForFilename(new Date())}.json`;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      
+      // Log activity
+      logActivity(state.currentUser.id, 'backup', 'System backup created and downloaded');
+      
+      // Update backup stats
+      updateBackupStats();
+      
+      showAlert('success', 'Backup Created', 'Your system backup has been created and downloaded successfully.');
+    }
+
+    // Load user documents
+    function loadUserDocuments(documents) {
+      const tableBody = document.getElementById('documents-table-body');
+      
+      if (documents.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">You have no documents yet.</td></tr>`;
+        return;
+      }
+      
+      // Sort documents by upload date (most recent first)
+      const sortedDocs = [...documents].sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+      
+      tableBody.innerHTML = '';
+      
+      sortedDocs.forEach(doc => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-500">
+                <i class="fas ${getFileIconClass(doc.title)}"></i>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900">${doc.title}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${getFileType(doc.title)}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${formatDate(doc.uploadDate)}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${formatSize(doc.size)}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <a href="javascript:void(0)" class="text-blue-600 hover:text-blue-900 mr-3 download-document" data-id="${doc.id}">
+              <i class="fas fa-download"></i>
+            </a>
+            <a href="javascript:void(0)" class="text-red-600 hover:text-red-900 delete-document" data-id="${doc.id}">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+      
+      // Add event listeners to buttons
+      document.querySelectorAll('.download-document').forEach(button => {
+        button.addEventListener('click', function() {
+          const docId = parseInt(this.getAttribute('data-id'));
+          downloadDocument(docId);
+        });
+      });
+      
+      document.querySelectorAll('.delete-document').forEach(button => {
+        button.addEventListener('click', function() {
+          const docId = parseInt(this.getAttribute('data-id'));
+          deleteDocument(docId);
+        });
+      });
+    }
+
+    // Set up admin tab switching
+    function setupAdminTabSwitching() {
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons and hide all contents
+          tabButtons.forEach(btn => btn.classList.remove('text-blue-600', 'border-blue-600'));
+          tabButtons.forEach(btn => btn.classList.add('text-gray-500', 'border-transparent'));
+          tabContents.forEach(content => content.classList.add('hidden'));
+          
+          // Add active class to clicked button and show corresponding content
+          this.classList.remove('text-gray-500', 'border-transparent');
+          this.classList.add('text-blue-600', 'border-blue-600');
+          
+          const contentId = 'content-' + this.id.split('-')[1];
+          document.getElementById(contentId).classList.remove('hidden');
+        });
+      });
+    }
+
+    // Initialize activity chart
+    function initActivityChart() {
+      const activityLogs = JSON.parse(localStorage.getItem('eyit_dims_activity_logs')) || [];
+      
+      // Get dates for the past 7 days
+      const dates = [];
+      const counts = {
+        login: Array(7).fill(0),
+        document: Array(7).fill(0),
+        user: Array(7).fill(0)
+      };
+      
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        dates.push(formatShortDate(date));
+        
+        const dateString = date.toISOString().split('T')[0];
+        
+        // Count activities for each category
+        activityLogs.forEach(log => {
+          if (log.timestamp.startsWith(dateString)) {
+            if (log.action.includes('login')) {
+              counts.login[6 - i]++;
+            } else if (log.action.includes('document')) {
+              counts.document[6 - i]++;
+            } else if (log.action.includes('user')) {
+              counts.user[6 - i]++;
+            }
+          }
+        });
+      }
+      
+      const ctx = document.getElementById('activityChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Login Activities',
+              data: counts.login,
+              borderColor: 'rgba(59, 130, 246, 1)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Document Activities',
+              data: counts.document,
+              borderColor: 'rgba(16, 185, 129, 1)',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'User Management',
+              data: counts.user,
+              borderColor: 'rgba(139, 92, 246, 1)',
+              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Set up file upload functionality
+    function setupFileUpload() {
+      const fileDropArea = document.querySelector('.file-drop-area');
+      const fileInput = document.querySelector('.file-input');
+      const fileDetailsForm = document.getElementById('file-details-form');
+      const cancelUploadBtn = document.getElementById('cancel-upload-btn');
+      const uploadDocumentBtn = document.getElementById('upload-document-btn');
+      let selectedFile = null;
+      
+      fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+          handleFileSelect(this.files[0]);
+        }
+      });
+      
+      fileDropArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('is-active');
+      });
+      
+      fileDropArea.addEventListener('dragleave', function() {
+        this.classList.remove('is-active');
+      });
+      
+      fileDropArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('is-active');
+        
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleFileSelect(e.dataTransfer.files[0]);
+        }
+      });
+      
+      cancelUploadBtn.addEventListener('click', function() {
+        fileDetailsForm.classList.add('hidden');
+        fileInput.value = '';
+        selectedFile = null;
+      });
+      
+      uploadDocumentBtn.addEventListener('click', function() {
+        if (selectedFile) {
+          uploadDocument(selectedFile);
+        }
+      });
+      
+      function handleFileSelect(file) {
+        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 
+                              'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                              'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+        const maxSizeInBytes = 25 * 1024 * 1024; // 25 MB
+        
+        // Check file type
+        if (!allowedTypes.includes(file.type)) {
+          showAlert('error', 'Invalid File Type', 'Please select a valid file type (PDF, image, or office document).');
+          return;
+        }
+        
+        // Check file size
+        if (file.size > maxSizeInBytes) {
+          showAlert('error', 'File Too Large', 'File size must be less than 25 MB.');
+          return;
+        }
+        
+        // Update file message
+        document.querySelector('.file-msg').textContent = file.name;
+        
+        // Show file details form
+        fileDetailsForm.classList.remove('hidden');
+        
+        // Set document title based on file name
+        document.getElementById('document-title').value = file.name.split('.')[0];
+        
+        // Store the selected file
+        selectedFile = file;
+      }
+    }
+
+    // Upload document
+    function uploadDocument(file) {
+      const title = document.getElementById('document-title').value.trim();
+      
+      if (!title) {
+        showAlert('error', 'Missing Title', 'Please provide a title for your document.');
+        return;
+      }
+      
+      // Show loading
+      showLoading('Uploading document...');
+      
+      // Simulate upload delay
+      setTimeout(() => {
+        const documents = JSON.parse(localStorage.getItem('eyit_dims_documents')) || [];
+        
+        // Check for duplicate file name for this user
+        const isDuplicate = documents.some(doc => 
+          doc.userId === state.currentUser.id && 
+          doc.title.toLowerCase() === title.toLowerCase()
+        );
+        
+        if (isDuplicate) {
+          hideLoading();
+          showAlert('error', 'Duplicate Document', 'You already have a document with this title. Please choose a different title.');
+          return;
+        }
+        
+        // Create new document
+        const newDocument = {
+          id: documents.length + 1,
+          userId: state.currentUser.id,
+          title: title,
+          filePath: `uploads/${state.currentUser.username}/${file.name}`, // This would be a server path in a real app
+          uploadDate: new Date().toISOString(),
+          size: file.size,
+          type: file.type
+        };
+        
+        documents.push(newDocument);
+        localStorage.setItem('eyit_dims_documents', JSON.stringify(documents));
+        
+        // Log activity
+        logActivity(state.currentUser.id, 'document upload', `Document uploaded: ${title}`);
+        
+        // Reset form
+        document.getElementById('document-upload').value = '';
+        document.getElementById('file-details-form').classList.add('hidden');
+        document.querySelector('.file-msg').textContent = 'or drag and drop files here';
+        
+        // Hide loading
+        hideLoading();
+        
+        // Show success message
+        showAlert('success', 'Document Uploaded', 'Your document has been uploaded successfully.');
+        
+        // Reload user dashboard data
+        loadUserDashboardData();
+      }, 1500);
+    }
+
+    // Download document
+    function downloadDocument(docId) {
+      const documents = JSON.parse(localStorage.getItem('eyit_dims_documents')) || [];
+      const document = documents.find(doc => doc.id === docId);
+      
+      if (document) {
+        // Show loading
+        showLoading('Preparing download...');
+        
+        // Simulate download delay
+        setTimeout(() => {
+          // In a real app, this would download the actual file
+          // For this prototype, we'll just log the action
+          
+          // Log activity
+          logActivity(state.currentUser.id, 'document download', `Document downloaded: ${document.title}`);
+          
+          // Hide loading
+          hideLoading();
+          
+          // Show success message
+          showAlert('success', 'Download Started', `Your document "${document.title}" will be downloaded shortly.`);
+        }, 1000);
+      }
+    }
+
+    // Delete document
+    function deleteDocument(docId) {
+      const documents = JSON.parse(localStorage.getItem('eyit_dims_documents')) || [];
+      const documentIndex = documents.findIndex(doc => doc.id === docId);
+      
+      if (documentIndex !== -1) {
+        const document = documents[documentIndex];
+        
+        if (document.userId !== state.currentUser.id && state.currentUser.role !== 'admin') {
+          showAlert('error', 'Permission Denied', 'You do not have permission to delete this document.');
+          return;
+        }
+        
+        // Confirm deletion
+        if (confirm(`Are you sure you want to delete the document "${document.title}"?`)) {
+          // Remove document from array
+          documents.splice(documentIndex, 1);
+          localStorage.setItem('eyit_dims_documents', JSON.stringify(documents));
+          
+          // Log activity
+          logActivity(state.currentUser.id, 'document delete', `Document deleted: ${document.title}`);
+          
+          // Show success message
+          showAlert('success', 'Document Deleted', 'The document has been deleted successfully.');
+          
+          // Reload user dashboard data
+          loadUserDashboardData();
+        }
+      }
+    }
+
+    // Set up profile form events
+    function setupProfileFormEvents() {
+      // Personal info form submission
+      document.getElementById('personal-info-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const fullName = document.getElementById('profile-fullname').value.trim();
+        const email = document.getElementById('profile-email').value.trim();
+        
+        if (!fullName) {
+          showAlert('error', 'Missing Information', 'Please provide your full name.');
+          return;
+        }
+        
+        if (!email || !isValidEmail(email)) {
+          showAlert('error', 'Invalid Email', 'Please provide a valid email address.');
+          return;
+        }
+        
+        // Show loading
+        showLoading('Updating profile...');
+        
+        // Simulate API call delay
+        setTimeout(() => {
+          const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+          const userIndex = users.findIndex(u => u.id === state.currentUser.id);
+          
+          if (userIndex !== -1) {
+            // Check if email is already used by another user
+            const isEmailTaken = users.some(u => u.id !== state.currentUser.id && u.email === email);
+            
+            if (isEmailTaken) {
+              hideLoading();
+              showAlert('error', 'Email Already Used', 'This email is already associated with another account.');
+              return;
+            }
+            
+            // Update user information
+            users[userIndex].fullName = fullName;
+            users[userIndex].email = email;
+            
+            localStorage.setItem('eyit_dims_users', JSON.stringify(users));
+            
+            // Update current user
+            state.currentUser = users[userIndex];
+            localStorage.setItem('eyit_dims_current_user', JSON.stringify(state.currentUser));
+            
+            // Log activity
+            logActivity(state.currentUser.id, 'profile update', 'User profile information updated');
+            
+            // Hide loading
+            hideLoading();
+            
+            // Show success message
+            showAlert('success', 'Profile Updated', 'Your profile information has been updated successfully.');
+            
+            // Update UI
+            document.getElementById('profile-user-name').textContent = fullName;
+          } else {
+            hideLoading();
+            showAlert('error', 'Update Failed', 'Failed to update profile information. Please try again.');
+          }
+        }, 1000);
+      });
+      
+      // Change password form submission
+      document.getElementById('change-password-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmNewPassword = document.getElementById('confirm-new-password').value;
+        
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+          showAlert('error', 'Missing Information', 'Please fill in all password fields.');
+          return;
+        }
+        
+        if (newPassword !== confirmNewPassword) {
+          showAlert('error', 'Password Mismatch', 'New passwords do not match. Please try again.');
+          return;
+        }
+        
+        // Check password strength
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(newPassword)) {
+          showAlert('error', 'Weak Password', 'Password must be at least 8 characters with uppercase, lowercase, number, and special character.');
+          return;
+        }
+        
+        // Show loading
+        showLoading('Updating password...');
+        
+        // Simulate API call delay
+        setTimeout(() => {
+          const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+          const userIndex = users.findIndex(u => u.id === state.currentUser.id);
+          
+          if (userIndex !== -1) {
+            // Verify current password
+            if (hashPassword(currentPassword) !== users[userIndex].password) {
+              hideLoading();
+              showAlert('error', 'Incorrect Password', 'Current password is incorrect. Please try again.');
+              return;
+            }
+            
+            // Update password
+            users[userIndex].password = hashPassword(newPassword);
+            
+            localStorage.setItem('eyit_dims_users', JSON.stringify(users));
+            
+            // Update current user
+            state.currentUser = users[userIndex];
+            localStorage.setItem('eyit_dims_current_user', JSON.stringify(state.currentUser));
+            
+            // Log activity
+            logActivity(state.currentUser.id, 'password change', 'User changed their password');
+            
+            // Hide loading
+            hideLoading();
+            
+            // Show success message
+            showAlert('success', 'Password Updated', 'Your password has been changed successfully.');
+            
+            // Clear form
+            document.getElementById('change-password-form').reset();
+            
+            // Add notification
+            addNotification(state.currentUser.id, 'Your password was changed successfully. If you did not make this change, please contact the administrator.');
+          } else {
+            hideLoading();
+            showAlert('error', 'Update Failed', 'Failed to update password. Please try again.');
+          }
+        }, 1500);
+      });
+      
+      // Toggle switches
+      document.getElementById('email-notifications')?.addEventListener('change', function() {
+        // In a real app, this would save the preference to the user's profile
+        const message = this.checked ? 'Email notifications enabled' : 'Email notifications disabled';
+        showAlert('info', 'Preference Saved', message);
+      });
+      
+      document.getElementById('two-factor')?.addEventListener('change', function() {
+        // In a real app, this would set up or disable 2FA
+        if (this.checked) {
+          showAlert('info', '2FA Setup Required', 'Please check your email for instructions to set up two-factor authentication.');
+        } else {
+          showAlert('info', '2FA Disabled', 'Two-factor authentication has been disabled for your account.');
+        }
+      });
+    }
+
+    // Show add user form
+    function showAddUserForm() {
+      // Create a modal for adding a user
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+          <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none" id="close-add-user-modal">
+            <i class="fas fa-times"></i>
+          </button>
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Add New User</h2>
+            <p class="text-gray-600">Create a new user account</p>
+          </div>
+          <form id="add-user-form" class="space-y-4">
+            <div>
+              <label for="add-user-fullname" class="block text-gray-700 mb-1">Full Name</label>
+              <input type="text" id="add-user-fullname" name="fullname" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <div>
+              <label for="add-user-username" class="block text-gray-700 mb-1">Username</label>
+              <input type="text" id="add-user-username" name="username" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <div>
+              <label for="add-user-email" class="block text-gray-700 mb-1">Email Address</label>
+              <input type="email" id="add-user-email" name="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <div>
+              <label for="add-user-password" class="block text-gray-700 mb-1">Password</label>
+              <input type="password" id="add-user-password" name="password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <div>
+              <label for="add-user-role" class="block text-gray-700 mb-1">Role</label>
+              <select id="add-user-role" name="role" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="user">User</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+            <div>
+              <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+                Add User
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Set up close button
+      document.getElementById('close-add-user-modal').addEventListener('click', function() {
+        document.body.removeChild(modal);
+      });
+      
+      // Form submission
+      document.getElementById('add-user-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const fullName = document.getElementById('add-user-fullname').value.trim();
+        const username = document.getElementById('add-user-username').value.trim();
+        const email = document.getElementById('add-user-email').value.trim();
+        const password = document.getElementById('add-user-password').value;
+        const role = document.getElementById('add-user-role').value;
+        
+        // Show loading
+        showLoading('Creating user...');
+        
+        // Simulate API call
+        setTimeout(() => {
+          const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+          
+          // Check for duplicate username or email
+          const isDuplicate = users.some(u => u.username === username || u.email === email);
+          
+          if (isDuplicate) {
+            hideLoading();
+            showAlert('error', 'User Creation Failed', 'Username or email already exists. Please use different ones.');
+            return;
+          }
+          
+          // Create new user
+          const newUser = {
+            id: users.length + 1,
+            fullName: fullName,
+            username: username,
+            email: email,
+            password: hashPassword(password),
+            role: role,
+            createdAt: new Date().toISOString()
+          };
+          
+          users.push(newUser);
+          localStorage.setItem('eyit_dims_users', JSON.stringify(users));
+          
+          // Log activity
+          logActivity(state.currentUser.id, 'user create', `Created new ${role} account: ${username}`);
+          
+          // Hide loading
+          hideLoading();
+          
+          // Close modal
+          document.body.removeChild(modal);
+          
+          // Show success message
+          showAlert('success', 'User Created', `New ${role} account has been created successfully.`);
+          
+          // Reload users table
+          loadUsersTable();
+        }, 1500);
+      });
+    }
+
+    // Edit user
+    function editUser(userId) {
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      const user = users.find(u => u.id === userId);
+      
+      if (!user) {
+        showAlert('error', 'User Not Found', 'The selected user could not be found.');
+        return;
+      }
+      
+      // Create a modal for editing a user
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+          <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none" id="close-edit-user-modal">
+            <i class="fas fa-times"></i>
+          </button>
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Edit User</h2>
+            <p class="text-gray-600">Update user information</p>
+          </div>
+          <form id="edit-user-form" class="space-y-4">
+            <input type="hidden" id="edit-user-id" value="${user.id}">
+            <div>
+              <label for="edit-user-fullname" class="block text-gray-700 mb-1">Full Name</label>
+              <input type="text" id="edit-user-fullname" name="fullname" value="${user.fullName}" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <div>
+              <label for="edit-user-username" class="block text-gray-700 mb-1">Username</label>
+              <input type="text" id="edit-user-username" name="username" value="${user.username}" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <div>
+              <label for="edit-user-email" class="block text-gray-700 mb-1">Email Address</label>
+              <input type="email" id="edit-user-email" name="email" value="${user.email}" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+            </div>
+            <div>
+              <label for="edit-user-password" class="block text-gray-700 mb-1">New Password (leave blank to keep current)</label>
+              <input type="password" id="edit-user-password" name="password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label for="edit-user-role" class="block text-gray-700 mb-1">Role</label>
+              <select id="edit-user-role" name="role" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
+                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrator</option>
+              </select>
+            </div>
+            <div>
+              <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+                Update User
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Set up close button
+      document.getElementById('close-edit-user-modal').addEventListener('click', function() {
+        document.body.removeChild(modal);
+      });
+      
+      // Form submission
+      document.getElementById('edit-user-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const userId = parseInt(document.getElementById('edit-user-id').value);
+        const fullName = document.getElementById('edit-user-fullname').value.trim();
+        const username = document.getElementById('edit-user-username').value.trim();
+        const email = document.getElementById('edit-user-email').value.trim();
+        const password = document.getElementById('edit-user-password').value;
+        const role = document.getElementById('edit-user-role').value;
+        
+        // Show loading
+        showLoading('Updating user...');
+        
+        // Simulate API call
+        setTimeout(() => {
+          const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+          const userIndex = users.findIndex(u => u.id === userId);
+          
+          if (userIndex === -1) {
+            hideLoading();
+            showAlert('error', 'User Update Failed', 'User not found.');
+            return;
+          }
+          
+          // Check for duplicate username or email
+          const isDuplicate = users.some(u => u.id !== userId && (u.username === username || u.email === email));
+          
+          if (isDuplicate) {
+            hideLoading();
+            showAlert('error', 'User Update Failed', 'Username or email already exists. Please use different ones.');
+            return;
+          }
+          
+          // Update user
+          users[userIndex].fullName = fullName;
+          users[userIndex].username = username;
+          users[userIndex].email = email;
+          users[userIndex].role = role;
+          
+          if (password) {
+            users[userIndex].password = hashPassword(password);
+          }
+          
+          localStorage.setItem('eyit_dims_users', JSON.stringify(users));
+          
+          // Update current user if it's the same
+          if (state.currentUser.id === userId) {
+            state.currentUser = users[userIndex];
+            localStorage.setItem('eyit_dims_current_user', JSON.stringify(state.currentUser));
+          }
+          
+          // Log activity
+          logActivity(state.currentUser.id, 'user update', `Updated user: ${username}`);
+          
+          // Hide loading
+          hideLoading();
+          
+          // Close modal
+          document.body.removeChild(modal);
+          
+          // Show success message
+          showAlert('success', 'User Updated', 'User information has been updated successfully.');
+          
+          // Reload users table
+          loadUsersTable();
+        }, 1500);
+      });
+    }
+
+    // Delete user
+    function deleteUser(userId) {
+      const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+      const user = users.find(u => u.id === userId);
+      
+      if (!user) {
+        showAlert('error', 'User Not Found', 'The selected user could not be found.');
+        return;
+      }
+      
+      // Prevent deleting self
+      if (userId === state.currentUser.id) {
+        showAlert('error', 'Action Not Allowed', 'You cannot delete your own account.');
+        return;
+      }
+      
+      // Confirm deletion
+      if (confirm(`Are you sure you want to delete the user "${user.username}" (${user.fullName})?`)) {
+        // Show loading
+        showLoading('Deleting user...');
+        
+        // Simulate API call
+        setTimeout(() => {
+          const users = JSON.parse(localStorage.getItem('eyit_dims_users')) || [];
+          const userIndex = users.findIndex(u => u.id === userId);
+          
+          if (userIndex === -1) {
+            hideLoading();
+            showAlert('error', 'User Delete Failed', 'User not found.');
+            return;
+          }
+          
+          // Get username before removing
+          const username = users[userIndex].username;
+          
+          // Remove user
+          users.splice(userIndex, 1);
+          localStorage.setItem('eyit_dims_users', JSON.stringify(users));
+          
+          // Log activity
+          logActivity(state.currentUser.id, 'user delete', `Deleted user: ${username}`);
+          
+          // Hide loading
+          hideLoading();
+          
+          // Show success message
+          showAlert('success', 'User Deleted', 'User has been deleted successfully.');
+          
+          // Reload users table
+          loadUsersTable();
+        }, 1500);
+      }
+    }
+
+    // Logout function
+    function logout() {
+      // Log activity before clearing user
+      if (state.currentUser) {
+        logActivity(state.currentUser.id, 'logout', 'User logged out');
+      }
+      
+      // Clear current user
+      state.currentUser = null;
+      state.isAuthenticated = false;
+      localStorage.removeItem('eyit_dims_current_user');
+      
+      // Show success message
+      showAlert('success', 'Logged Out', 'You have been logged out successfully.');
+      
+      // Update UI for unauthenticated user
+      updateNavigationForUnauthenticatedUser();
+      
+      // Load home page
+      loadView('home');
+    }
+
+    // Add notification
+    function addNotification(userId, message) {
+      const notifications = JSON.parse(localStorage.getItem('eyit_dims_notifications')) || [];
+      
+      const newNotification = {
+        id: notifications.length + 1,
+        userId: userId,
+        message: message,
+        timestamp: new Date().toISOString(),
+        isRead: false
+      };
+      
+      notifications.push(newNotification);
+      localStorage.setItem('eyit_dims_notifications', JSON.stringify(notifications));
+    }
+
+    // Show alert modal
+    function showAlert(type, title, message) {
+      const alertModal = document.getElementById('alert-modal');
+      const alertIcon = document.getElementById('alert-icon');
+      const alertTitle = document.getElementById('alert-title');
+      const alertMessage = document.getElementById('alert-message');
+      
+      // Set alert content based on type
+      switch(type) {
+        case 'success':
+          alertIcon.className = 'text-green-500';
+          alertIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+          break;
+        case 'error':
+          alertIcon.className = 'text-red-500';
+          alertIcon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+          break;
+        case 'info':
+          alertIcon.className = 'text-blue-500';
+          alertIcon.innerHTML = '<i class="fas fa-info-circle"></i>';
+          break;
+        case 'warning':
+          alertIcon.className = 'text-yellow-500';
+          alertIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+          break;
+      }
+      
+      alertTitle.textContent = title;
+      alertMessage.textContent = message;
+      
+      alertModal.classList.remove('hidden');
+    }
+
+    // Show loading overlay
+    function showLoading(message = 'Processing...') {
+      const loadingOverlay = document.getElementById('loading-overlay');
+      const loadingMessage = document.getElementById('loading-message');
+      
+      loadingMessage.textContent = message;
+      loadingOverlay.classList.remove('hidden');
+    }
+
+    // Hide loading overlay
+    function hideLoading() {
+      const loadingOverlay = document.getElementById('loading-overlay');
+      loadingOverlay.classList.add('hidden');
+    }
+
+    // Utility function: Format date
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    // Utility function: Format date and time
+    function formatDateTime(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    // Utility function: Format short date (e.g., "Jun 15")
+    function formatShortDate(date) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[date.getMonth()]} ${date.getDate()}`;
+    }
+
+    // Utility function: Format date for filename
+    function formatDateForFilename(date) {
+      return date.toISOString().split('T')[0].replace(/-/g, '');
+    }
+
+    // Utility function: Format file size
+    function formatSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Utility function: Get file icon class based on filename
+    function getFileIconClass(filename) {
+      const extension = filename.split('.').pop().toLowerCase();
+      
+      switch (extension) {
+        case 'pdf':
+          return 'fa-file-pdf';
+        case 'doc':
+        case 'docx':
+          return 'fa-file-word';
+        case 'xls':
+        case 'xlsx':
+          return 'fa-file-excel';
+        case 'ppt':
+        case 'pptx':
+          return 'fa-file-powerpoint';
+        case 'jpg':
+        case 'jpeg':
+        case 'png':
+        case 'gif':
+          return 'fa-file-image';
+        case 'zip':
+        case 'rar':
+          return 'fa-file-archive';
+        default:
+          return 'fa-file-alt';
+      }
+    }
+
+    // Utility function: Get file type based on filename
+    function getFileType(filename) {
+      const extension = filename.split('.').pop().toLowerCase();
+      
+      switch (extension) {
+        case 'pdf':
+          return 'PDF Document';
+        case 'doc':
+        case 'docx':
+          return 'Word Document';
+        case 'xls':
+        case 'xlsx':
+          return 'Excel Spreadsheet';
+        case 'ppt':
+        case 'pptx':
+          return 'PowerPoint';
+        case 'jpg':
+        case 'jpeg':
+        case 'png':
+        case 'gif':
+          return 'Image';
+        case 'zip':
+        case 'rar':
+          return 'Archive';
+        default:
+          return 'Document';
+      }
+    }
+
+    // Validate email
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    // Initialize the application when DOM is ready
+    document.addEventListener('DOMContentLoaded', initializeApp);
+  </script>
+
+  <script>
+    // Helper: POST JSON with loading UI
+    async function postJSON(url, data) {
+      try {
+        showLoading();
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        return json;
+      } catch (err) {
+        return { ok: false, error: err.message || String(err) };
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // Wire form submissions to API endpoints
+    window.addEventListener('DOMContentLoaded', () => {
+      const registerForm = document.getElementById('register-form');
+      if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const fullname = document.getElementById('register-fullname').value.trim();
+          const username = document.getElementById('register-username').value.trim();
+          const email = document.getElementById('register-email').value.trim();
+          const password = document.getElementById('register-password').value;
+          const confirm = document.getElementById('register-confirm-password').value;
+          if (password !== confirm) { showAlert('error', 'Validation', 'Passwords do not match'); return; }
+          const resp = await postJSON('/api/register', { fullname, username, email, password });
+          if (resp.ok) {
+            showAlert('success', 'Registered', 'Account created — you can now log in.');
+            document.querySelectorAll('.close-modal').forEach(btn => btn.click());
+          } else {
+            showAlert('error', 'Registration failed', resp.error || 'Unable to register');
+          }
+        });
+      }
+
+      const forgotForm = document.getElementById('forgot-password-form');
+      if (forgotForm) {
+        forgotForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('forgot-email').value.trim();
+          const resp = await postJSON('/api/forgot', { email });
+          if (resp.ok) {
+            showAlert('success', 'Reset token', `A reset token was generated (for testing): ${resp.token}`);
+            document.querySelectorAll('.close-modal').forEach(btn => btn.click());
+          } else {
+            showAlert('error', 'Failed', resp.error || 'Unable to generate reset token');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
